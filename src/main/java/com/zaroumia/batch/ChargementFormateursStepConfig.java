@@ -1,11 +1,16 @@
 package com.zaroumia.batch;
 
-import java.util.List;
+import static com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter.FORMATEURS_INSERT_QUERY;
+
+import javax.sql.DataSource;
 
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.database.ItemPreparedStatementSetter;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +21,21 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import com.zaroumia.batch.domaine.Formateur;
+import com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter;
 
 @Configuration
 public class ChargementFormateursStepConfig {
 
     @Autowired
     private StepBuilderFactory stepBuilderFactory;
+
+    @Autowired
+    private DataSource datasource;
+
+    @Bean(name = "formateurItemPreparedStatementSetter")
+    public ItemPreparedStatementSetter<Formateur> formateurItemPreparedStatementSetter() {
+	return new FormateurItemPreparedStatementSetter();
+    }
 
     @Bean(name = "formateurItemReader")
     @StepScope
@@ -33,18 +47,16 @@ public class ChargementFormateursStepConfig {
     }
 
     @Bean(name = "formateurItemWriter")
-    public ItemWriter<Formateur> formateurItemWriter() {
-	return new ItemWriter<Formateur>() {
-	    @Override
-	    public void write(List<? extends Formateur> items) throws Exception {
-		items.forEach(System.out::println);
-	    }
-	};
+    public JdbcBatchItemWriter<Formateur> formateurItemWriter(
+	    @Qualifier("formateurItemPreparedStatementSetter") ItemPreparedStatementSetter<Formateur> formateurItemPreparedStatementSetter) {
+	return new JdbcBatchItemWriterBuilder<Formateur>().dataSource(datasource).sql(FORMATEURS_INSERT_QUERY)
+		.itemPreparedStatementSetter(formateurItemPreparedStatementSetter).build();
     }
 
     @Bean(name = "chargementFormateursStep")
-    public Step chargementFormateursStep(@Qualifier("formateurItemReader") FlatFileItemReader formateurItemReader,
-	    @Qualifier("formateurItemWriter") ItemWriter formateurItemWriter) {
+    public Step chargementFormateursStep(
+	    @Qualifier("formateurItemReader") FlatFileItemReader<Formateur> formateurItemReader,
+	    @Qualifier("formateurItemWriter") ItemWriter<Formateur> formateurItemWriter) {
 	return stepBuilderFactory.get("chargementFormateursStep").<Formateur, Formateur>chunk(10)
 		.reader(formateurItemReader).writer(formateurItemWriter).build();
     }
