@@ -5,6 +5,7 @@ import static com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter.FO
 import javax.sql.DataSource;
 
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemWriter;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
 import com.zaroumia.batch.domaine.Formateur;
+import com.zaroumia.batch.listeners.ChargementFormateursStepListener;
 import com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter;
 
 @Configuration
@@ -35,6 +37,11 @@ public class ChargementFormateursStepConfig {
     @Bean(name = "formateurItemPreparedStatementSetter")
     public ItemPreparedStatementSetter<Formateur> formateurItemPreparedStatementSetter() {
 	return new FormateurItemPreparedStatementSetter();
+    }
+
+    @Bean(name = "chargementFormateursStepListener")
+    public StepExecutionListener chargementFormateursStepListener() {
+	return new ChargementFormateursStepListener();
     }
 
     @Bean(name = "formateurItemReader")
@@ -56,8 +63,10 @@ public class ChargementFormateursStepConfig {
     @Bean(name = "chargementFormateursStep")
     public Step chargementFormateursStep(
 	    @Qualifier("formateurItemReader") FlatFileItemReader<Formateur> formateurItemReader,
-	    @Qualifier("formateurItemWriter") ItemWriter<Formateur> formateurItemWriter) {
+	    @Qualifier("formateurItemWriter") ItemWriter<Formateur> formateurItemWriter,
+	    @Qualifier("chargementFormateursStepListener") StepExecutionListener chargementFormateursStepListener) {
 	return stepBuilderFactory.get("chargementFormateursStep").<Formateur, Formateur>chunk(10)
-		.reader(formateurItemReader).writer(formateurItemWriter).build();
+		.reader(formateurItemReader).writer(formateurItemWriter).listener(chargementFormateursStepListener)
+		.build();
     }
 }
