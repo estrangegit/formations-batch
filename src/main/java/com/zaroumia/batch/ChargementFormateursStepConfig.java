@@ -8,7 +8,6 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.ItemPreparedStatementSetter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -48,7 +47,7 @@ public class ChargementFormateursStepConfig {
     @StepScope
     public FlatFileItemReader<Formateur> formateurItemReader(
 	    @Value("#{jobParameters['formateursFile']}") final Resource inputFile) {
-	return new FlatFileItemReaderBuilder<Formateur>().name("FormateurItemReader").resource(inputFile).delimited()
+	return new FlatFileItemReaderBuilder<Formateur>().name("formateurItemReader").resource(inputFile).delimited()
 		.delimiter(";").names(new String[] { "id", "nom", "prenom", "adresseEmail" })
 		.targetType(Formateur.class).build();
     }
@@ -63,7 +62,7 @@ public class ChargementFormateursStepConfig {
     @Bean(name = "chargementFormateursStep")
     public Step chargementFormateursStep(
 	    @Qualifier("formateurItemReader") FlatFileItemReader<Formateur> formateurItemReader,
-	    @Qualifier("formateurItemWriter") ItemWriter<Formateur> formateurItemWriter,
+	    @Qualifier("formateurItemWriter") JdbcBatchItemWriter<Formateur> formateurItemWriter,
 	    @Qualifier("chargementFormateursStepListener") StepExecutionListener chargementFormateursStepListener) {
 	return stepBuilderFactory.get("chargementFormateursStep").<Formateur, Formateur>chunk(10)
 		.reader(formateurItemReader).writer(formateurItemWriter).listener(chargementFormateursStepListener)
