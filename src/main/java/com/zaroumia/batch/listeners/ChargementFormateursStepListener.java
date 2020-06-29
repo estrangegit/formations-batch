@@ -13,12 +13,6 @@ public class ChargementFormateursStepListener extends StepListenerSupport<Format
     private static final Logger LOGGER = LoggerFactory.getLogger(ChargementFormateursStepListener.class);
 
     @Override
-    public void beforeStep(StepExecution stepExecution) {
-	// TODO Auto-generated method stub
-
-    }
-
-    @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
 	LOGGER.info("Chargement des formateurs :{} formateur(s) enregistré(s) ", stepExecution.getWriteCount());
 	return stepExecution.getExitStatus();
