@@ -9,17 +9,20 @@ public class MyJobParametersValidator implements JobParametersValidator {
 
     @Override
     public void validate(JobParameters jobParameters) throws JobParametersInvalidException {
-	if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("formateursFile"), "csv")) {
-	    throw new JobParametersInvalidException("Le fichier des formateurs doit être au format csv");
-	}
+        if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("formateursFile"), "csv")) {
+            throw new JobParametersInvalidException(
+                    "Le fichier des formateurs doit être au format csv");
+        }
 
-	if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("formationsFile"), "xml")) {
-	    throw new JobParametersInvalidException("le fichier des formations doit être au format XML");
-	}
+        if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("formationsFile"), "xml")) {
+            throw new JobParametersInvalidException(
+                    "le fichier des formations doit être au format XML");
+        }
 
-	if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("seancesFile"), "csv")
-		&& !StringUtils.endsWithIgnoreCase(jobParameters.getString("seancesFile"), "txt")) {
-	    throw new JobParametersInvalidException("le fichier des séances doit être au format CSV ou TXT");
-	}
+        if (!StringUtils.endsWithIgnoreCase(jobParameters.getString("seancesFile"), "csv")
+                && !StringUtils.endsWithIgnoreCase(jobParameters.getString("seancesFile"), "txt")) {
+            throw new JobParametersInvalidException(
+                    "le fichier des séances doit être au format CSV ou TXT");
+        }
     }
 }

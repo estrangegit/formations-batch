@@ -1,9 +1,7 @@
 package com.zaroumia.batch;
 
 import static com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter.FORMATEURS_INSERT_QUERY;
-
 import javax.sql.DataSource;
-
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -14,12 +12,10 @@ import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilde
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
-
 import com.zaroumia.batch.domaine.Formateur;
 import com.zaroumia.batch.listeners.ChargementFormateursStepListener;
 import com.zaroumia.batch.mappers.FormateurItemPreparedStatementSetter;
@@ -33,39 +29,37 @@ public class ChargementFormateursStepConfig {
     @Autowired
     private DataSource datasource;
 
-    @Bean(name = "formateurItemPreparedStatementSetter")
+    @Bean
     public ItemPreparedStatementSetter<Formateur> formateurItemPreparedStatementSetter() {
-	return new FormateurItemPreparedStatementSetter();
+        return new FormateurItemPreparedStatementSetter();
     }
 
-    @Bean(name = "chargementFormateursStepListener")
+    @Bean
     public StepExecutionListener chargementFormateursStepListener() {
-	return new ChargementFormateursStepListener();
+        return new ChargementFormateursStepListener();
     }
 
-    @Bean(name = "formateurItemReader")
+    @Bean
     @StepScope
     public FlatFileItemReader<Formateur> formateurItemReader(
-	    @Value("#{jobParameters['formateursFile']}") final Resource inputFile) {
-	return new FlatFileItemReaderBuilder<Formateur>().name("formateurItemReader").resource(inputFile).delimited()
-		.delimiter(";").names(new String[] { "id", "nom", "prenom", "adresseEmail" })
-		.targetType(Formateur.class).build();
+            @Value("#{jobParameters['formateursFile']}") final Resource inputFile) {
+        return new FlatFileItemReaderBuilder<Formateur>().name("formateurItemReader")
+                .resource(inputFile).delimited().delimiter(";")
+                .names(new String[] {"id", "nom", "prenom", "adresseEmail"})
+                .targetType(Formateur.class).build();
     }
 
-    @Bean(name = "formateurItemWriter")
-    public JdbcBatchItemWriter<Formateur> formateurItemWriter(
-	    @Qualifier("formateurItemPreparedStatementSetter") ItemPreparedStatementSetter<Formateur> formateurItemPreparedStatementSetter) {
-	return new JdbcBatchItemWriterBuilder<Formateur>().dataSource(datasource).sql(FORMATEURS_INSERT_QUERY)
-		.itemPreparedStatementSetter(formateurItemPreparedStatementSetter).build();
+    @Bean
+    public JdbcBatchItemWriter<Formateur> formateurItemWriter() {
+        return new JdbcBatchItemWriterBuilder<Formateur>().dataSource(datasource)
+                .sql(FORMATEURS_INSERT_QUERY)
+                .itemPreparedStatementSetter(formateurItemPreparedStatementSetter()).build();
     }
 
-    @Bean(name = "chargementFormateursStep")
-    public Step chargementFormateursStep(
-	    @Qualifier("formateurItemReader") FlatFileItemReader<Formateur> formateurItemReader,
-	    @Qualifier("formateurItemWriter") JdbcBatchItemWriter<Formateur> formateurItemWriter,
-	    @Qualifier("chargementFormateursStepListener") StepExecutionListener chargementFormateursStepListener) {
-	return stepBuilderFactory.get("chargementFormateursStep").<Formateur, Formateur>chunk(10)
-		.reader(formateurItemReader).writer(formateurItemWriter).listener(chargementFormateursStepListener)
-		.build();
+    @Bean
+    public Step chargementFormateursStep() {
+        return stepBuilderFactory.get("chargementFormateursStep").<Formateur, Formateur>chunk(10)
+                .reader(formateurItemReader(null)).writer(formateurItemWriter())
+                .listener(chargementFormateursStepListener()).build();
     }
 }
