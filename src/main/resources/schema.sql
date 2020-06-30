@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS SEANCES(
 	id_formateur INT NOT NULL,
 	date_debut DATE NOT NULL,
 	date_fin DATE NOT NULL,
+	PRIMARY KEY (code_formation, id_formateur, date_debut, date_fin),
 	CONSTRAINT FK_FORMATEURS FOREIGN KEY(id_formateur) REFERENCES FORMATEURS(id),
 	CONSTRAINT FK_FORMATIONS FOREIGN KEY(code_formation) REFERENCES FORMATIONS(CODE)
 );
