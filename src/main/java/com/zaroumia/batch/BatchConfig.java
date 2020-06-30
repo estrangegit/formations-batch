@@ -53,10 +53,11 @@ public class BatchConfig {
     @Bean
     public Job job(@Qualifier("chargementFormateursStep") Step chargementFormateursStep,
 	    @Qualifier("chargementFormationsStep") Step chargementFormationsStep,
-	    @Qualifier("chargementSeancesStep") Step chargementSeancesStep,
+	    @Qualifier("chargementSeancesCsvStep") Step chargementSeancesCsvStep,
+	    @Qualifier("chargementSeancesTxtStep") Step chargementSeancesTxtStep,
 	    @Qualifier("compositeJobParametersValidator") JobParametersValidator compositeJobParametersValidator) {
 	return jobBuilderFactory.get("formations-batch").start(chargementFormateursStep).next(chargementFormationsStep)
-		.next(chargementSeancesStep).validator(compositeJobParametersValidator)
+		.next(chargementSeancesTxtStep).validator(compositeJobParametersValidator)
 		.incrementer(new RunIdIncrementer()).build();
     }
 }

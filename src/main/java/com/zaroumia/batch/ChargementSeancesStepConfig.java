@@ -18,6 +18,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
+import org.springframework.batch.item.file.transform.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,6 +85,17 @@ public class ChargementSeancesStepConfig {
 		.fieldSetMapper(seanceFieldSetMapper).build();
     }
 
+    @Bean(name = "seanceTxtItemReader")
+    @StepScope
+    public FlatFileItemReader<Seance> seanceTxtItemReader(
+	    @Value("#{jobParameters['seancesFile']}") final Resource inputFile,
+	    @Qualifier("seanceFieldSetMapper") FieldSetMapper<Seance> seanceFieldSetMapper) {
+	return new FlatFileItemReaderBuilder<Seance>().name("seanceTxtItemReader").resource(inputFile).fixedLength()
+		.columns(new Range[] { new Range(1, 16), new Range(17, 20), new Range(25, 32), new Range(37, 44) })
+		.names(new String[] { "codeFormation", "idFormateur", "dateDebut", "dateFin" })
+		.fieldSetMapper(seanceFieldSetMapper).build();
+    }
+
     @Bean(name = "seanceItemWriter")
     public JdbcBatchItemWriter<Seance> seanceItemWriter(
 	    @Qualifier("seanceItemPreparedStatementSetter") ItemPreparedStatementSetter<Seance> seanceItemPreparedStatementSetter) {
@@ -91,11 +103,21 @@ public class ChargementSeancesStepConfig {
 		.itemPreparedStatementSetter(seanceItemPreparedStatementSetter).build();
     }
 
-    @Bean(name = "chargementSeancesStep")
-    public Step chargementSeancesStep(@Qualifier("seanceCsvItemReader") FlatFileItemReader<Seance> seanceCsvItemReader,
+    @Bean(name = "chargementSeancesCsvStep")
+    public Step chargementSeancesCsvStep(
+	    @Qualifier("seanceCsvItemReader") FlatFileItemReader<Seance> seanceCsvItemReader,
 	    @Qualifier("seanceItemWriter") JdbcBatchItemWriter<Seance> seanceItemWriter,
 	    @Qualifier("chargementSeancesStepListener") StepExecutionListener chargementSeancesStepListener) {
 	return stepBuilderFactory.get("chargementFormationsStep").<Seance, Seance>chunk(10).reader(seanceCsvItemReader)
+		.writer(seanceItemWriter).listener(chargementSeancesStepListener).build();
+    }
+
+    @Bean(name = "chargementSeancesTxtStep")
+    public Step chargementSeancesTxtStep(
+	    @Qualifier("seanceTxtItemReader") FlatFileItemReader<Seance> seanceTxtItemReader,
+	    @Qualifier("seanceItemWriter") JdbcBatchItemWriter<Seance> seanceItemWriter,
+	    @Qualifier("chargementSeancesStepListener") StepExecutionListener chargementSeancesStepListener) {
+	return stepBuilderFactory.get("chargementFormationsStep").<Seance, Seance>chunk(10).reader(seanceTxtItemReader)
 		.writer(seanceItemWriter).listener(chargementSeancesStepListener).build();
     }
 }
