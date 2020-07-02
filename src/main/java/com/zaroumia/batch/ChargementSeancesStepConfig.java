@@ -8,6 +8,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.item.database.ItemPreparedStatementSetter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -27,6 +28,7 @@ import org.springframework.core.io.Resource;
 import com.zaroumia.batch.domaine.Seance;
 import com.zaroumia.batch.listeners.ChargementSeancesStepListener;
 import com.zaroumia.batch.mappers.SeanceItemPreparedStatementSetter;
+import com.zaroumia.batch.policies.SeanceSkipPolicy;
 
 @Configuration
 public class ChargementSeancesStepConfig {
@@ -99,18 +101,23 @@ public class ChargementSeancesStepConfig {
     }
 
     @Bean
+    public SkipPolicy seanceSkipPolicy() {
+        return new SeanceSkipPolicy();
+    }
+
+    @Bean
     public Step chargementSeancesCsvStep(FlatFileItemReader<Seance> seanceCsvItemReader,
             JdbcBatchItemWriter<Seance> seanceItemWriter,
             StepExecutionListener chargementSeancesStepListener) {
         return stepBuilderFactory.get("chargementSeancesCsvStep").<Seance, Seance>chunk(10)
-                .reader(seanceCsvItemReader).writer(seanceItemWriter)
-                .listener(chargementSeancesStepListener).build();
+                .reader(seanceCsvItemReader).writer(seanceItemWriter).faultTolerant()
+                .skipPolicy(seanceSkipPolicy()).listener(chargementSeancesStepListener).build();
     }
 
     @Bean
     public Step chargementSeancesTxtStep() {
         return stepBuilderFactory.get("chargementSeancesTxtStep").<Seance, Seance>chunk(10)
-                .reader(seanceTxtItemReader(null)).writer(seanceItemWriter())
-                .listener(chargementSeancesStepListener()).build();
+                .reader(seanceTxtItemReader(null)).writer(seanceItemWriter()).faultTolerant()
+                .skipPolicy(seanceSkipPolicy()).listener(chargementSeancesStepListener()).build();
     }
 }
