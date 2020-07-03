@@ -81,7 +81,7 @@ https://divtable.com/table-styler/
   </h1>
 
   <p>Bonjour ${formateur.nom} ${formateur.prenom},</p>
-  <p>Vous trouverez ci-après votre planning des formations pour les jours à venir.  </p>
+  <p>Vous trouverez ci-apr&egrave;s votre planning des formations pour les jours &agrave; venir.  </p>
 
 
   <table class="blueTable" >
@@ -103,7 +103,7 @@ https://divtable.com/table-styler/
     </tbody>
   </table>
 
-  <p>Bien à vous.  </p>
+  <p>Bien &agrave; vous.  </p>
 </body>
 
 </html>
