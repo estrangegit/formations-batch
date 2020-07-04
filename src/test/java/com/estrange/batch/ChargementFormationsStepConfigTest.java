@@ -6,8 +6,13 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.estrange.batch.dao.FormationDao;
 
 class ChargementFormationsStepConfigTest extends BaseTest {
+
+    @Autowired
+    private FormationDao formationDao;
 
     @Test
     void shouldLoadFormationsWithSuccess() {
@@ -19,8 +24,6 @@ class ChargementFormationsStepConfigTest extends BaseTest {
                 jobLauncherTestUtils.launchStep("chargementFormationsStep", jobParameters);
         assertThat(result.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
 
-        Integer count =
-                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM formations;", Integer.class);
-        assertThat(count).isEqualTo(4);
+        assertThat(formationDao.count()).isEqualTo(4);
     }
 }
