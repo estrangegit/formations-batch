@@ -12,6 +12,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import com.estrange.batch.services.MailContentGenerator;
+import com.estrange.batch.services.PlanningMailSenderService;
 
 @RunWith(SpringRunner.class)
 @JdbcTest
@@ -31,4 +33,10 @@ public abstract class BaseTest {
 
     @MockBean
     protected JavaMailSender javaMailSender;
+
+    @MockBean
+    protected MailContentGenerator mailContentGenerator;
+
+    @MockBean
+    protected PlanningMailSenderService planningMailSenderService;
 }

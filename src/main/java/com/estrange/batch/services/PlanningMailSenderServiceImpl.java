@@ -23,5 +23,4 @@ public class PlanningMailSenderServiceImpl implements PlanningMailSenderService 
 
         javaMailSender.send(message);
     }
-
 }
