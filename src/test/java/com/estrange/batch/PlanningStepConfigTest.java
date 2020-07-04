@@ -1,24 +1,28 @@
 package com.estrange.batch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import javax.mail.MessagingException;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
+import org.junit.Rule;
+import org.junit.Test;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.test.context.jdbc.Sql;
+import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.util.ServerSetup;
 
-class PlanningStepConfigTest extends BaseTest {
+public class PlanningStepConfigTest extends BaseTest {
+
+    @Rule
+    public GreenMailRule serverSmtp =
+            new GreenMailRule(new ServerSetup(2525, "localhost", ServerSetup.PROTOCOL_SMTP));
 
     @Test
     @Sql(scripts = {"classpath:init-all-tables.sql"})
-    void shouldSendPlanningWithSuccess() throws MessagingException {
+    public void shouldSendPlanningWithSuccess() throws MessagingException {
         JobExecution result = jobLauncherTestUtils.launchStep("planningStep");
         assertThat(result.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
-
-        verify(planningMailSenderService, times(4)).send(ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        assertThat(serverSmtp.getReceivedMessages()).hasSize(4);
+        assertThat(serverSmtp.getReceivedMessages()[0].getSubject())
+                .isEqualTo("Votre planning de formations");
     }
 }

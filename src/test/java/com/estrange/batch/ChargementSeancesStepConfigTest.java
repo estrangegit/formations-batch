@@ -1,7 +1,7 @@
 package com.estrange.batch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -11,13 +11,13 @@ import org.springframework.test.context.jdbc.Sql;
 import com.estrange.batch.dao.SeanceDao;
 
 @Sql(scripts = {"classpath:init-formations-formateurs-tables.sql"})
-class ChargementSeancesStepConfigTest extends BaseTest {
+public class ChargementSeancesStepConfigTest extends BaseTest {
 
     @Autowired
     private SeanceDao seanceDao;
 
     @Test
-    void shouldLoadSeancesFromCsvWithSuccess() {
+    public void shouldLoadSeancesFromCsvWithSuccess() {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("seancesFile", "classpath:inputs/seancesFile.csv").toJobParameters();
 
@@ -29,7 +29,7 @@ class ChargementSeancesStepConfigTest extends BaseTest {
     }
 
     @Test
-    void shouldLoadSeancesFromTxtWithSuccess() {
+    public void shouldLoadSeancesFromTxtWithSuccess() {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("seancesFile", "classpath:inputs/seancesFile.txt").toJobParameters();
 

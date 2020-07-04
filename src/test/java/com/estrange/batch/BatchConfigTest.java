@@ -1,10 +1,8 @@
 package com.estrange.batch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
+import org.junit.Rule;
+import org.junit.Test;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
@@ -13,8 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.estrange.batch.dao.FormateurDao;
 import com.estrange.batch.dao.FormationDao;
 import com.estrange.batch.dao.SeanceDao;
+import com.icegreen.greenmail.junit.GreenMailRule;
+import com.icegreen.greenmail.util.ServerSetup;
 
-class BatchConfigTest extends BaseTest {
+public class BatchConfigTest extends BaseTest {
+
+    @Rule
+    public GreenMailRule serverSmtp =
+            new GreenMailRule(new ServerSetup(2525, "localhost", ServerSetup.PROTOCOL_SMTP));
 
     @Autowired
     private FormateurDao formateurDao;
@@ -26,7 +30,7 @@ class BatchConfigTest extends BaseTest {
     private SeanceDao seanceDao;
 
     @Test
-    void shouldExecuteJobWithSuccess() throws Exception {
+    public void shouldExecuteJobWithSuccess() throws Exception {
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("formateursFile", "classpath:inputs/formateursFile.csv")
                 .addString("formationsFile", "classpath:inputs/formationsFile.xml")
@@ -39,8 +43,8 @@ class BatchConfigTest extends BaseTest {
         assertThat(formateurDao.count()).isEqualTo(16);
         assertThat(formationDao.count()).isEqualTo(4);
         assertThat(seanceDao.count()).isEqualTo(20);
-
-        verify(planningMailSenderService, times(4)).send(ArgumentMatchers.any(),
-                ArgumentMatchers.any());
+        assertThat(serverSmtp.getReceivedMessages()).hasSize(4);
+        assertThat(serverSmtp.getReceivedMessages()[0].getSubject())
+                .isEqualTo("Votre planning de formations");
     }
 }
